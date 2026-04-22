@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحدي البرمجة - الصف العاشر</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f0f9ff; 
+        }
+        .code-line {
+            font-family: 'Courier New', Courier, monospace;
+            direction: ltr;
+            background: #1e293b;
+            color: #34d399;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+        .main-gradient {
+            background: linear-gradient(135deg, #1d4ed8 0%, #059669 50%, #eab308 100%);
+        }
+        .option-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-card:hover:not(:disabled) {
+            transform: translateY(-2px);
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .report-table th { background-color: #1e40af; color: white; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="app-container" class="w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-8 border-yellow-400 relative">
+        
+        <!-- Registration Screen -->
+        <div id="screen-registration" class="block">
+            <div class="main-gradient p-12 text-center text-white space-y-4">
+                <div class="w-24 h-24 bg-white/20 backdrop-blur-md rounded-full mx-auto flex items-center justify-center border-4 border-white/50 shadow-lg">
+                    <i data-lucide="code-2" class="w-12 h-12"></i>
+                </div>
+                <h1 class="text-4xl font-black tracking-tight">بطل البرمجة - العاشر</h1>
+                <p class="text-white/90 text-lg font-medium">تحدي القوائم، القواميس، الدوال، والوحدات</p>
+            </div>
+            
+            <div class="p-10 space-y-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">اسم الطالب الثلاثي:</label>
+                        <input type="text" id="student-name" placeholder="أدخل اسمك الكامل..." 
+                               class="w-full p-4 bg-gray-50 border-2 border-blue-100 rounded-2xl focus:border-blue-500 outline-none text-lg font-bold text-blue-900">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">الصف:</label>
+                        <input type="text" id="student-class" placeholder="مثلاً: 10 / 1" 
+                               class="w-full p-4 bg-gray-50 border-2 border-blue-100 rounded-2xl focus:border-green-500 outline-none text-lg font-bold text-green-900">
+                    </div>
+                </div>
+                <button onclick="startGame()" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl transition-all active:scale-95 text-2xl flex items-center justify-center gap-3">
+                    ابدأ اللعبة الآن <i data-lucide="zap"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="screen-quiz" class="hidden">
+            <div class="bg-blue-600 p-6 text-white flex justify-between items-center shadow-lg">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center text-blue-900 font-black">
+                        <i data-lucide="user" class="w-6 h-6"></i>
+                    </div>
+                    <span id="display-name" class="font-bold"></span>
+                </div>
+                <div class="bg-white/20 px-4 py-2 rounded-xl font-black">
+                    السؤال <span id="current-q-num">1</span> / 10
+                </div>
+            </div>
+            
+            <div class="p-8 space-y-6">
+                <div id="question-text" class="text-xl font-bold text-gray-800 leading-relaxed bg-blue-50 p-6 rounded-2xl border-r-8 border-blue-500"></div>
+
+                <div id="options-container" class="grid grid-cols-1 gap-3"></div>
+
+                <div id="feedback" class="hidden p-4 rounded-xl text-center font-bold text-lg animate-pulse"></div>
+
+                <button id="next-btn" onclick="nextQuestion()" disabled
+                        class="w-full bg-gray-200 text-gray-400 font-black py-4 rounded-2xl transition-all text-xl cursor-not-allowed">
+                    تحقق من الإجابة
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="screen-results" class="hidden p-10 text-center space-y-8">
+            <div id="result-icon" class="mx-auto w-32 h-32 flex items-center justify-center"></div>
+            <h2 class="text-4xl font-black text-blue-600">اكتمل الاختبار!</h2>
+            
+            <div class="bg-blue-50 border-4 border-dashed border-blue-200 p-8 rounded-[3rem] relative">
+                <p class="text-gray-600 font-bold text-lg mb-2">أحسنت يا بطل، نتيجتك هي:</p>
+                <div class="text-8xl font-black text-green-600">
+                    <span id="final-score">0</span><span class="text-3xl text-gray-400">/10</span>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-3">
+                <button onclick="restartGame()" 
+                        class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-blue-700 active:scale-95 text-xl flex items-center justify-center gap-3">
+                    <i data-lucide="user-plus"></i> طالب آخر
+                </button>
+                <button onclick="showReport()" 
+                        class="w-full bg-green-500 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-green-600 active:scale-95 text-xl flex items-center justify-center gap-3">
+                    <i data-lucide="layout-list"></i> عرض تقرير النتائج
+                </button>
+            </div>
+        </div>
+
+        <!-- Report Screen -->
+        <div id="screen-report" class="hidden p-6 space-y-6 flex flex-col h-full">
+            <div class="flex justify-between items-center border-b-2 pb-4">
+                <h2 class="text-2xl font-black text-blue-700 flex items-center gap-2">
+                    <i data-lucide="database"></i> سجل نتائج الطلاب المشاركين
+                </h2>
+                <button onclick="closeReport()" class="text-gray-400 hover:text-red-500 transition-colors"><i data-lucide="x-circle" class="w-10 h-10"></i></button>
+            </div>
+            
+            <div class="overflow-auto max-h-[400px] rounded-2xl border-2 border-gray-100 shadow-inner">
+                <table class="w-full text-right border-collapse">
+                    <thead class="sticky top-0">
+                        <tr>
+                            <th class="p-4 border">الاسم الثلاثي</th>
+                            <th class="p-4 border">الصف</th>
+                            <th class="p-4 border text-center">الدرجة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-body" class="bg-white"></tbody>
+                </table>
+            </div>
+
+            <button onclick="exportCSV()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-black py-4 rounded-2xl shadow-lg transition-all text-xl flex items-center justify-center gap-2">
+                <i data-lucide="download"></i> تحميل التقرير (Excel)
+            </button>
+        </div>
+
+    </div>
+
+    <!-- UI Message Box -->
+    <div id="toast" class="fixed top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-8 py-4 rounded-2xl shadow-2xl transform -translate-y-32 transition-all duration-500 flex items-center gap-3 z-50">
+        <i data-lucide="alert-circle" class="text-yellow-400"></i>
+        <span id="toast-text" class="font-bold"></span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, doc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'final-ict-tenth-v1';
+
+        let user = null;
+        let currentStudent = { name: '', class: '', score: 0 };
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let canAnswer = true;
+
+        // Massive Bank - Synthesis of Worksheet 1, Worksheet 2, and Link
+        const questionBank = [
+            // القوائم Lists
+            { q: "ما هي مخرجات الكود: <span class='code-line'>x=[1,2]; y=x; y.append(3); print(x)</span>؟", o: ["[1, 2]", "Error", "[1, 2, 3]", "[1, 2, 3, 3]"], c: 2 },
+            { q: "لإدراج 'Basketball' في الموقع الثاني (الفهرس 1) نستخدم:", o: ["sports.append(1, 'Basketball')", "sports.pop(1, 'Basketball')", "sports.insert(1, 'Basketball')", "sports[1] = 'Basketball'"], c: 2 },
+            { q: "ما وظيفة الدالة <span class='code-line'>list_1.append(4)</span>؟", o: ["حذف الرقم 4", "إضافة 4 في نهاية القائمة", "إضافة 4 في البداية", "تعديل العنصر الأول إلى 4"], c: 1 },
+            { q: "ما ناتج تنفيذ الأمر: <span class='code-line'>len([1, [2,3], 4])</span>؟", o: ["4", "2", "3", "Error"], c: 2 },
+            { q: "أي أمر يحذف العنصر الأخير من القائمة؟", o: ["list.clear()", "list.pop()", "list.remove()", "del list"], c: 1 },
+            { q: "ناتج تنفيذ <span class='code-line'>L=[10, 20, 30, 40]; print(L[-1])</span> هو:", o: ["10", "40", "-40", "Error"], c: 1 },
+            { q: "لاستبدال 'Hello' بـ 'Hi' في القائمة <span class='code-line'>words=['Hello', 'World']</span>:", o: ["words[0] = 'Hi'", "words.append('Hi')", "words.pop('Hi')", "words.remove('Hi')"], c: 0 },
+            { q: "للتحقق من وجود 'Apple' في القائمة <span class='code-line'>fruits</span> نستخدم:", o: ["if fruits.contains('Apple')", "if 'Apple' in fruits", "if 'Apple' == fruits", "if find('Apple')"], c: 1 },
+            { q: "صح أم خطأ: القوائم (Lists) في بايثون قابلة للتغيير (Mutable)؟", o: ["صح", "خطأ"], c: 0 },
+            { q: "الدالة التي تعيد عدد العناصر في القائمة هي:", o: ["max()", "count()", "len()", "size()"], c: 2 },
+
+            // الصفوف Tuples
+            { q: "كيف يتم تعريف صف (Tuple) يحتوي على عنصر واحد فقط 'A'؟", o: ["t = ('A')", "t = ['A']", "t = {'A'}", "t = ('A',)"], c: 3 },
+            { q: "ماذا سيحدث عند تنفيذ: <span class='code-line'>tpl=(1,2,3); tpl[0]=10</span>؟", o: ["تتغير القيمة إلى 10", "خطأ برمجي (TypeError)", "يتم إضافة 10 للنهاية", "يتم مسح الصف"], c: 1 },
+            { q: "لتعديل عنصر داخل صف (Tuple)، الطريقة الصحيحة هي:", o: ["تغيير الفهرس مباشرة", "استخدام دالة update", "تحويله لقائمة، تعديله، ثم إعادته لصف", "لا يمكن تعديله بأي وسيلة"], c: 2 },
+            { q: "عملية تفريغ قيم الصف في متغيرات مستقلة تسمى:", o: ["Packing", "Unpacking", "Slicing", "Indexing"], c: 1 },
+            { q: "المحددات المستخدمة لتعريف الصفوف (Tuples) هي:", o: ["[]", "{}", "()", "<>"], c: 2 },
+
+            // القواميس Dictionaries
+            { q: "في القاموس student = {'name': 'Ali', 'age': 15}، كيف نحصل على 15؟", o: ["student[1]", "student.age", "student['age']", "student.get(15)"], c: 2 },
+            { q: "أي دالة تمسح جميع العناصر من القاموس وتتركه فارغاً؟", o: ["pop()", "remove()", "clear()", "del"], c: 2 },
+            { q: "ماذا سيحدث عند تنفيذ: <span class='code-line'>d = {'a': 1, 'a': 2}; print(d['a'])</span>؟", o: ["1", "Error", "2", "{'a': 1, 'a': 2}"], c: 2 },
+            { q: "لحذف عنصر بمعلومية مفتاحه وإرجاع قيمته نستخدم:", o: ["remove()", "pop()", "discard()", "del"], c: 1 },
+            { q: "الدالة التي تعيد جميع المفاتيح والقيم كأزواج (Tuples) هي:", o: ["keys()", "values()", "items()", "list()"], c: 2 },
+            { q: "صح أم خطأ: مفاتيح القاموس يجب أن تكون فريدة (Unique)؟", o: ["صح", "خطأ"], c: 0 },
+
+            // الدوال Functions
+            { q: "كيف نبدأ تعريف دالة جديدة في لغة بايثون؟", o: ["function name():", "define name():", "def name():", "create name():"], c: 2 },
+            { q: "المتغيرات التي تستقبل القيم في رأس الدالة تسمى:", o: ["Arguments", "Returns", "Parameters", "Globals"], c: 2 },
+            { q: "لتعديل متغير عام معرف خارج الدالة من داخل الدالة نستخدم:", o: ["global", "local", "public", "static"], c: 0 },
+            { q: "ماذا ترجع الدالة تلقائياً إذا لم تحتوي على تعليمة Return؟", o: ["0", "None", "Error", "True"], c: 1 },
+            { q: "المتغيرات التي تُعرف داخل الدالة ولا يمكن الوصول لها من الخارج تسمى:", o: ["عامة", "محلية", "ثابتة", "خارجية"], c: 1 },
+            { q: "ما مخرجات: <span class='code-line'>def f(x): return x*2; print(f(5))</span>؟", o: ["5", "10", "x*2", "None"], c: 1 },
+
+            // الوحدات والحزم Modules
+            { q: "لاستيراد حزمة OpenCV في البرنامج نكتب:", o: ["import opencv", "include cv2", "import cv2", "using cv2"], c: 2 },
+            { q: "الأمر المستخدم لتثبيت الحزم الخارجية عبر Terminal هو:", o: ["install package", "python get", "pip install", "add unit"], c: 2 },
+            { q: "أي وحدة تستخدم للتعامل مع التاريخ والوقت في بايثون؟", o: ["random", "math", "datetime", "sqlite3"], c: 2 },
+            { q: "لتشغيل الكاميرا باستخدام OpenCV نستخدم الدالة:", o: ["imread()", "VideoCapture(0)", "imshow()", "waitKey()"], c: 1 },
+            { q: "إغلاق جميع نوافذ العرض المفتوحة في OpenCV يكون بـ:", o: ["close()", "exit()", "destroyAllWindows()", "stop()"], c: 2 },
+            { q: "أي حزمة تستخدم للعمليات الحسابية والمصفوفات والجبر الخطي؟", o: ["OpenCV", "NumPy", "Random", "Datetime"], c: 1 }
+        ];
+
+        const initGame = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                onAuthStateChanged(auth, u => user = u);
+            } catch (e) { console.error("Auth Error", e); }
+            lucide.createIcons();
+        };
+
+        window.showToast = (text) => {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-text').innerText = text;
+            t.classList.replace('-translate-y-32', 'translate-y-0');
+            setTimeout(() => t.classList.replace('translate-y-0', '-translate-y-32'), 3000);
+        };
+
+        window.startGame = () => {
+            const name = document.getElementById('student-name').value.trim();
+            const cls = document.getElementById('student-class').value.trim();
+
+            if (name.split(' ').length < 3) return showToast("يرجى إدخال اسمك الثلاثي كاملاً");
+            if (!cls) return showToast("يرجى إدخال الصف");
+
+            currentStudent = { name, class: cls, score: 0 };
+            currentIndex = 0;
+            // Select 10 random unique questions
+            currentQuestions = [...questionBank].sort(() => Math.random() - 0.5).slice(0, 10);
+            
+            showScreen('screen-quiz');
+            document.getElementById('display-name').innerText = name;
+            renderQuestion();
+        };
+
+        function renderQuestion() {
+            canAnswer = true;
+            const q = currentQuestions[currentIndex];
+            document.getElementById('current-q-num').innerText = currentIndex + 1;
+            document.getElementById('question-text').innerHTML = q.q;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = q.o.map((opt, idx) => `
+                <button onclick="checkAnswer(${idx})" id="opt-${idx}"
+                        class="option-card w-full text-right p-5 border-2 border-gray-100 rounded-2xl bg-gray-50 text-lg font-bold flex items-center justify-between">
+                    <span>${opt}</span>
+                    <div class="w-6 h-6 border-2 border-gray-200 rounded-full"></div>
+                </button>
+            `).join('');
+            
+            document.getElementById('feedback').classList.add('hidden');
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.disabled = true;
+            nextBtn.className = "w-full bg-gray-200 text-gray-400 font-black py-4 rounded-2xl transition-all text-xl cursor-not-allowed";
+            lucide.createIcons();
+        }
+
+        window.checkAnswer = (idx) => {
+            if (!canAnswer) return;
+            canAnswer = false;
+            
+            const q = currentQuestions[currentIndex];
+            const feedback = document.getElementById('feedback');
+            const btns = document.querySelectorAll('.option-card');
+            const nextBtn = document.getElementById('next-btn');
+            
+            feedback.classList.remove('hidden');
+            
+            if (idx === q.c) {
+                currentStudent.score++;
+                btns[idx].classList.add('bg-green-100', 'border-green-500', 'text-green-700');
+                btns[idx].querySelector('div').className = "w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white";
+                btns[idx].querySelector('div').innerHTML = "✓";
+                feedback.innerHTML = "إجابة صحيحة! أحسنت يا ذكي 🌟";
+                feedback.className = "p-4 rounded-xl text-center font-bold text-lg bg-green-50 text-green-700 block animate-bounce";
+            } else {
+                btns[idx].classList.add('bg-red-100', 'border-red-500', 'text-red-700');
+                btns[idx].querySelector('div').className = "w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white";
+                btns[idx].querySelector('div').innerHTML = "×";
+                btns[q.c].classList.add('bg-green-50', 'border-green-300', 'text-green-600');
+                feedback.innerHTML = `خطأ! الإجابة الصحيحة هي: ${q.o[q.c]}`;
+                feedback.className = "p-4 rounded-xl text-center font-bold text-lg bg-red-50 text-red-700 block";
+            }
+
+            nextBtn.disabled = false;
+            nextBtn.className = "w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 text-xl cursor-pointer";
+            if (currentIndex === 9) nextBtn.innerText = "عرض النتيجة النهائية";
+        };
+
+        window.nextQuestion = () => {
+            if (currentIndex < 9) {
+                currentIndex++;
+                renderQuestion();
+            } else {
+                finishGame();
+            }
+        };
+
+        async function finishGame() {
+            showScreen('screen-results');
+            document.getElementById('final-score').innerText = currentStudent.score;
+            
+            const iconDiv = document.getElementById('result-icon');
+            if (currentStudent.score >= 8) iconDiv.innerHTML = '<i data-lucide="crown" class="w-24 h-24 text-yellow-500"></i>';
+            else if (currentStudent.score >= 5) iconDiv.innerHTML = '<i data-lucide="award" class="w-24 h-24 text-blue-500"></i>';
+            else iconDiv.innerHTML = '<i data-lucide="zap" class="w-24 h-24 text-orange-500"></i>';
+
+            if (user) {
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'scores'), {
+                        ...currentStudent,
+                        timestamp: new Date().toISOString()
+                    });
+                } catch (e) { console.error("Save Error", e); }
+            }
+            lucide.createIcons();
+        }
+
+        window.showReport = async () => {
+            showScreen('screen-report');
+            const tbody = document.getElementById('report-body');
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center p-8 font-bold text-gray-400">جاري تحميل سجل النتائج...</td></tr>';
+            
+            if (!user) return;
+            try {
+                const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'scores'));
+                let data = [];
+                snap.forEach(d => data.push(d.data()));
+                data.sort((a,b) => b.score - a.score);
+
+                tbody.innerHTML = data.map(r => `
+                    <tr class="hover:bg-blue-50 transition-colors">
+                        <td class="p-4 border font-bold text-gray-700">${r.name}</td>
+                        <td class="p-4 border text-gray-500">${r.class}</td>
+                        <td class="p-4 border text-center font-black ${r.score >= 5 ? 'text-green-600' : 'text-red-600'}">${r.score} / 10</td>
+                    </tr>
+                `).join('') || '<tr><td colspan="3" class="text-center p-8">لا يوجد مشاركون بعد</td></tr>';
+            } catch (e) { tbody.innerHTML = '<tr><td colspan="3" class="text-center p-8 text-red-500">حدث خطأ في الاتصال</td></tr>'; }
+            lucide.createIcons();
+        };
+
+        window.exportCSV = () => {
+            const rows = document.querySelectorAll("#report-body tr");
+            let csv = "اسم الطالب,الصف,الدرجة\n";
+            rows.forEach(r => {
+                const cols = r.querySelectorAll("td");
+                if (cols.length > 2) csv += `"${cols[0].innerText}","${cols[1].innerText}","${cols[2].innerText}"\n`;
+            });
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `نتائج_تحدي_البرمجة_${new Date().toLocaleDateString()}.csv`;
+            link.click();
+        };
+
+        function showScreen(id) {
+            ['screen-registration', 'screen-quiz', 'screen-results', 'screen-report'].forEach(s => {
+                document.getElementById(s).classList.add('hidden');
+            });
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        window.closeReport = () => showScreen('screen-results');
+        window.restartGame = () => {
+            document.getElementById('student-name').value = '';
+            document.getElementById('student-class').value = '';
+            showScreen('screen-registration');
+        };
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
